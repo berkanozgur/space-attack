@@ -72,7 +72,7 @@ DESIGN.md Rework: "Enemy shots and enemy-body collisions drain the player's ener
 
 **Outcome:** Updated the design and manual checks for movement/firing energy costs, lethal enemy hits and collisions, and localStorage high score persistence with a page-session fallback. Clarified replacement-ship invulnerability for the later polish phase; no game code was added.
 
-**Reflections:** I left out a gap in the explanation and codex misinterpreted energy mechanic. I reviewed every doc created for 5 mins and provided feedback on changes.
+**Reflections:** I left out a gap in the explanation and misinterpreted energy mechanic. I reviewed every doc created for 5 mins and provided feedback on changes.
 
 ## Prompt 3 - time: 2026-10-02 08:54:25 UTC (11:54:25 Europe/Istanbul)
 
@@ -226,6 +226,16 @@ Create a temporary debug menu for me to skip waves.
 Host the project in codex sites and give a sharable link to me.
 ```
 
-**Outcome:** Registered Space Attack with Sites, configured a static deployment containing only the three game files, and enabled public-link access. Publication proceeds through the Sites workflow, with the verified deployment result reported in chat.
+**Outcome:** Published Space Attack on Sites with public-link access at https://space-attack.bozgur.chatgpt.site; deployment status was confirmed succeeded. Only the three game files are hosted, including the temporary F2 debug menu; local docs and review artifacts remain outside the hosted files.
+
+**Reflections:**
+
+## Prompt 12 - time: 2026-10-02 11:09:28 UTC (14:09:28 Europe/Istanbul)
+
+```text
+Update readme with short, clean and clear explanations of the project.
+```
+
+**Outcome:** Updated README.md with a concise project overview, live/local play instructions, controls, gameplay basics, technology, and documentation links. No game or deployment files changed.
 
 **Reflections:**
