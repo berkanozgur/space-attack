@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Space Attack</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main aria-label="Space Attack fixed shooter">
+    <canvas id="game" width="640" height="600" tabindex="0" aria-label="Space Attack. Arrows or A and D move. Space fires. Enter starts or restarts. Escape pauses or resumes. M toggles sound. F2 opens the temporary wave debug menu.">Space Attack requires a browser with Canvas 2D support.</canvas>
+    <section id="debug-menu" role="dialog" aria-label="Temporary wave debug menu" hidden>
+      <h2>TEMPORARY DEBUG</h2>
+      <p>Combat and timers are frozen here.</p>
+      <label for="debug-wave">Jump to wave</label>
+      <input id="debug-wave" type="number" min="1" step="1" value="2">
+      <button id="debug-jump" type="button">Jump</button>
+      <button id="debug-next" type="button">Next wave</button>
+      <button id="debug-close" type="button">Close / F2 / Esc</button>
+      <p>Skipping refuels energy. Score and ships are preserved.</p>
+    </section>
+  </main>
+</body>
+</html>

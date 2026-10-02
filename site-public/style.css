@@ -1,0 +1,12 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+body { display: grid; place-items: center; }
+main { display: grid; place-items: center; width: 100%; height: 100%; }
+canvas { display: block; width: min(100vw, calc(100vh * 640 / 600)); height: min(100vh, calc(100vw * 600 / 640)); image-rendering: pixelated; }
+canvas:focus { outline: none; }
+#debug-menu { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(440px, 94vw); padding: 20px; border: 2px solid #45ffff; background: #000; color: #fff; font: 14px monospace; }
+#debug-menu[hidden] { display: none; }
+#debug-menu h2 { color: #ffff45; font-size: 18px; }
+#debug-menu input, #debug-menu button { font: inherit; padding: 8px; margin: 5px 0; border: 1px solid #45ffff; background: #000; color: #fff; }
+#debug-menu input { width: 80px; }
+#debug-menu button { cursor: pointer; }

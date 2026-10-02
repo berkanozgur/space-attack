@@ -1,0 +1,58 @@
+# Space Attack
+
+## Intent and scope
+A small desktop-browser fixed shooter in the style of Galaxian, inspired by the 1982 Emerson Arcadia 2001 game Space Attack. Original artwork evokes the attached reference without copying its sprites.
+
+## Controls
+Left/Right arrows or A/D move horizontally; Space fires; Enter starts and restarts; Esc toggles pause during an active run. M toggles sound; show its current on/off state. Show controls on screen, including during play and pause.
+
+## Mechanics
+- The cyan player ship stays near the bottom, moves left and right only, and cannot leave the playfield. Only one player shot may be on screen at a time; holding Space can fire again once that shot disappears.
+- An armada occupies compact rows near the top: yellow flagships above red and green rows. It shifts side to side in discrete whole-pixel steps, holding its position between steps rather than gliding.
+- Individual enemies peel off and descend in straight southeast or southwest diagonal segments, with up defined as north. At each segment's start, choose the horizontal direction toward the player's current position to seek vertical alignment for shooting. Reconsider direction only after the segment completes, rather than tracking every frame.
+- Commit to each diagonal direction for approximately 4–5 enemy ship lengths along the path (initial target: 4.5 enemy heights, configured centrally). Choose directions that fit the playfield; a side-boundary reversal may interrupt a segment to keep the enemy on screen.
+- Divers fire white bullets straight down with zero horizontal velocity and no steering. Interpret the limit as **one active bullet per enemy**, independent of the player's one-shot limit. Fire whenever eligible and the previous bullet is gone. Remove bullets at the bottom of the combat playfield or on a hit. Shorter travel near the bottom naturally increases firing frequency; do not add another rapid-fire timer.
+- Divers do not normally return to formation. Remove enemies that reach the combat bottom without awarding score. Resolve player contact before bottom removal so a collision still destroys the ship. A surviving bullet remains until it hits or exits, even if its firing enemy is removed.
+- Player shots destroy enemies on contact. Formation enemies score less than divers; flagships are worth the most. Exact point values remain to be tuned in the shared config block.
+- Horizontal movement drains energy over time, and each player shot fired consumes energy. At zero energy, one ship is lost. Enemy shots and enemy-body collisions immediately destroy the active ship regardless of its remaining energy. After any ship loss, if ships remain, restore full energy and resume with a replacement ship.
+- Start with three ships total, including the active ship. The HUD reserve count excludes the active ship. Losing the last ship ends the game.
+- Award one bonus ship when the run first reaches or crosses 5,000 points. Do not repeat the award at later multiples.
+- Clearing all enemies, by destruction or bottom exits, refuels energy to full and starts the next wave. Increase formation speed and dive frequency; increase downward bullet speed within safe bounds to increase firing frequency while retaining the one-bullet-per-enemy rule. Keep all tuning in the config block.
+- Resolve collisions consistently and remove each destroyed shot/enemy once, preventing duplicate score or damage from the same event.
+- Activation cadence: launch interval falls through 1.5, 1.375, 1.25, 1.125, and 1 second within each five-wave block, then resets to 1.5 seconds when the batch grows. Batch size is 1 for waves 1–5, 2 for waves 6–10, 3 for waves 11–15, and increases by one every five completed waves. A separate simultaneous-active cap is 2 in waves 1–10, 3 in waves 11–20, 4 in waves 21–30, and increases by one every ten waves up to a configurable ceiling of 8. Select distinct formation enemies, limited by batch size, remaining enemies, and free cap slots. If the cap is full, wait until the next scheduled activation; do not queue missed batches. Activated divers blink white/original color every 0.18 seconds, remaining visible and collidable throughout. Pause freezes blink timing. All cadence, cap, and blink parameters live in CONFIG.
+
+## States and transitions
+- **Start:** show title, controls, and Enter prompt; no active combat. Initialize a fresh run when Enter is pressed.
+- **Play:** update movement, shots, formation, diving enemies, collisions, score, energy, and ships. A cleared armada advances the wave; a non-final ship loss replaces the ship within play.
+- **Pause:** Esc freezes movement, bullets, energy use, and all gameplay timers. Keep the scene and HUD visible with PAUSED and an Esc resume prompt. Esc resumes the same run; clear held inputs and reset the frame-time baseline on both transitions. Ignore repeated Esc keydown events; Enter does not restart a paused run.
+- **Game over:** stop combat, retain final score, and show the final score and Enter restart prompt.
+- **Restart:** Enter from game over resets score, energy, ships, wave, bonus eligibility, entities, and input state, then begins play. Preserve high score.
+- Wave transitions are part of play: a 1.2-second banner freezes combat and energy use between waves. Clear held inputs at its start. Esc pauses its countdown; Enter does not restart it. The first wave begins immediately without a banner.
+
+## HUD
+Keep score, health, and lives visible on start, play, pause, wave transitions, and game over. Show score digits at top left and high-score digits at top right, with no SCORE or HIGH SCORE labels. Keep the energy bar marked **E** at bottom left; show reserve ship icons at bottom right followed by bare wave digits rightmost, with no RESERVE or WAVE labels. If reserves exceed the icon display limit, show a bare reserve count beside the icons. The game-over final score is also displayed as bare blocky digits. Keep control hints readable without obscuring play. Save high score in localStorage and restore it when the page opens. If storage is unavailable or reading/writing fails, fall back to a page-session high score without interrupting the game.
+
+## Visual direction
+Black background with sparse stars, chunky pixel silhouettes, blocky score digits, and a limited bright palette of yellow, red, green, cyan, and white. Use yellow flagships, red/green enemies, and a cyan player. Use original sprites drawn with code, crisp pixel edges, and consistent pixel scale. The attached image guides composition, spacing, palette, and retro character; it is not a runtime asset.
+
+Logical canvas: 640 × 600, scaled uniformly to the window with letterboxing as needed. Keep HUD clear of combat. Cap elapsed frame time and accumulate time into fixed 60 Hz simulation ticks. Ship, shots, divers, and formation have integer logical coordinates at every tick; retain fractional travel budgets separately so movement speed remains time-based. Draw sprite and bullet rectangles only at integer logical pixels, with no interpolation. Formation steps are 4 pixels every 0.24 seconds in wave 1, reversing at ±56 pixels; later waves shorten the interval within the existing difficulty limits. This halves the previous formation stepping rate at every wave. Pause, focus changes, and restart clear accumulated frame time.
+
+## Core implementation tuning
+Armada: 41 enemies in six independently centered rows, top to bottom: 2 yellow flagships, 5 red, 7 green, 9 red, 9 red, 9 red. Compact spacing: 36 logical pixels horizontally and 27 vertically; first row center y=72, leaving clearance below the HUD digits even with sprite height included. Diagonal segments travel 4.5 × enemy height (108 logical pixels along the path) at 45 degrees; initial speed is 135 logical pixels/second. Enemy bullets start at 190 logical pixels/second. The combat bottom is y=536, below the player's collision area and above the HUD; remove escaping enemies and bullets there. Scores: formation enemies 50, divers 100, flagships 200 in formation or 300 while diving; escapes score zero. Energy starts at 100 and fully refills on wave completion; actual horizontal movement costs 2.16 per second and each fired shot costs 0.96. Holding Space fires again after the previous shot clears. Ship loss clears enemy shots and returns surviving divers to formation; this replacement reset is the only return-to-formation exception. All values are adjustable in the single config block.
+
+## Arcade audio
+Use synthesized square-wave stepped pitches for shots, kills, wave/bonus cues, and a longer sixteen-note start/restart jingle lasting 2.24 seconds; a descending triangle-wave sequence marks ship loss. No external sounds or continuous music. At energy ≤25%, repeat a short two-note beep every 0.65 seconds during active combat. Stop the warning on refuel, ship loss, restart, or mute; pause freezes its timer and silences output. A wave banner has no low-energy warning. All thresholds, note sequences, durations, and gains live in CONFIG. M controls every sound, including the jingle and alarm. Sound quality and volume still require listening on the user's device.
+
+## Latest HUD and energy revision
+Right-align the bare wave digits at the bottom right, with reserve icons immediately to their left and a clear gap. Wave is rightmost; reserve icons and any overflow count shift left as wave digit width grows. Align the mute indicator on the bottom control-hint baseline. Energy costs remain 20% above the original values: movement costs 2.16 per second and firing costs 0.96 per shot. Full-energy wave refills remain unchanged.
+
+## Temporary debug menu
+F2 opens/closes a temporary wave-skip menu during play or pause; Esc or Close also dismisses it. Freeze gameplay and timers, clear input, and silence audio while open. Jump to a selected wave (1–999) or advance one wave. Skipping preserves score/ships/high score, refuels energy, rebuilds the armada, clears shots and effects/protection, and queues the normal banner. The menu remains open until dismissed; closing restores the prior play/pause state. Invalid wave values are ignored. CONFIG.debug.enabled controls availability; this is temporary test tooling, not a permanent gameplay feature.
+
+## Revision status
+The playtest-note revisions and user-authorized polish are implemented. Syntax, simulation, and direct-file Edge smoke checks passed; controlled wave-banner, explosion, replacement-flash, and game-over screens were reviewed. Full natural gameplay, difficulty pacing, and sound quality still need manual playtesting.
+
+## Implementation order
+The user authorized the polish phase after core implementation and review. Keep scope limited to the requested effects: 0.35-second pixel explosions on destruction; a 0.16-second white flash on ship loss; 1.5 seconds of replacement protection indicated by alternating white/cyan colors; a between-wave banner; and synthesized firing, destruction, ship-loss, wave, and bonus sounds with M to mute. The original lethal hit still destroys the active ship immediately. Protected replacements ignore enemy-body hits and consume colliding enemy bullets; energy depletion can still lose a ship. Explosions never collide or award score. Gameplay/effect timers freeze on pause; short tones decay independently, with master audio silenced during pause. Restart clears effects, protection, banners, and active tones while retaining mute preference and high score. Audio starts only after keyboard interaction; unsupported audio never blocks gameplay. All tuning stays in CONFIG; no assets or additional features.
+
+
